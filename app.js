@@ -1,3 +1,4 @@
+require("dotenv").config();
 const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
@@ -8,6 +9,14 @@ const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 
 const app = express();
+
+const mongoose = require("mongoose");
+mongoose.set("strictQuery", false);
+
+main().catch((err) => console.log(err));
+async function main() {
+  await mongoose.connect(process.env.DB_URI);
+}
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
