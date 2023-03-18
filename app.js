@@ -7,10 +7,22 @@ const logger = require("morgan");
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
-const catalogRouter = require("./routes/catalog"); //Import routes for "catalog" area of site
+const catalogRouter = require("./routes/catalog");
+
+const compression = require("compression");
+const helmet = require("helmet");
 
 const app = express();
 
+// Set up rate limiter: maximum of fifty requests per minute
+const RateLimit = require("express-rate-limit");
+const limiter = RateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 50,
+});
+app.use(limiter);
+
+// Set up mongoose connection
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 
@@ -27,11 +39,14 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(compression());
+app.use(helmet());
+
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
-app.use("/catalog", catalogRouter); // Add catalog routes to middleware chain.
+app.use("/catalog", catalogRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
